@@ -87,8 +87,6 @@ public class AwsConfig {
         return awsLambdaAsync;
     }
 
-
-
     @Bean
     ScheduledExecutorService scheduledExecutorService() {
         int cores = Runtime.getRuntime().availableProcessors();

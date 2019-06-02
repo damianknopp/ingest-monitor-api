@@ -34,29 +34,26 @@ public class KinesisController {
     @RequestMapping(value = "streams",
             method = RequestMethod.GET,
             consumes = {MediaType.ALL_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE})
+            produces = {MediaType.APPLICATION_STREAM_JSON_VALUE})
     public Mono<List<String>> getAllStreams() {
         if (logger.isDebugEnabled()) {
             logger.debug("get all kinesis streams");
             logger.debug("access key = " + awsCredentials.getAWSAccessKeyId());
         }
 
-        Future<ListStreamsResult> resp = kinesisAsyncClient.listStreamsAsync();
-        CompletableFuture<List<String>> future = CompletableFuture.supplyAsync(() -> {
+        return Mono.fromFuture(CompletableFuture.supplyAsync(() -> {
             try {
-                return resp.get().getStreamNames();
+                return kinesisAsyncClient.listStreamsAsync().get().getStreamNames();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        }, scheduledExecutorService);
-
-        return Mono.fromFuture(future);
+        }, scheduledExecutorService));
     }
 
     @RequestMapping(value = "stream/{name}",
             method = RequestMethod.GET,
             consumes = {MediaType.ALL_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE})
+            produces = {MediaType.APPLICATION_STREAM_JSON_VALUE})
     public Mono<StreamDescription> describeStream(@PathVariable("name") String streamName) {
         if (logger.isDebugEnabled()) {
             logger.debug("describe stream {}", streamName);
@@ -77,7 +74,7 @@ public class KinesisController {
     @RequestMapping(value = "stream/consumer",
             method = RequestMethod.POST,
             consumes = {MediaType.APPLICATION_JSON_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE})
+            produces = {MediaType.APPLICATION_STREAM_JSON_VALUE})
     public Mono<ConsumerDescription> describeStreamConsumer(@RequestBody DescribeConsumer describeConsumer) {
         if (logger.isDebugEnabled()) {
             logger.debug("describe stream consumer {}", describeConsumer.toString());

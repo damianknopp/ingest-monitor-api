@@ -38,7 +38,7 @@ public class CloudWatchRollupController {
     @RequestMapping(value = "{stream}/cloudwatch/records/incoming/period/day/{days}",
             method = RequestMethod.GET,
             consumes = {MediaType.ALL_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE})
+            produces = {MediaType.APPLICATION_STREAM_JSON_VALUE})
     public Mono<List<Datapoint>> getIncomingRecords(
             @PathVariable("stream") String streamName,
             @PathVariable("days") Integer days) {
@@ -62,7 +62,7 @@ public class CloudWatchRollupController {
     @RequestMapping(value = "{stream}/cloudwatch/records/outgoing/period/day/{days}",
             method = RequestMethod.GET,
             consumes = {MediaType.ALL_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE})
+            produces = {MediaType.APPLICATION_STREAM_JSON_VALUE})
     public Mono<List<Datapoint>> getOutgoingRecords(
             @PathVariable("stream") String streamName,
             @PathVariable("days") Integer days) {
@@ -86,7 +86,7 @@ public class CloudWatchRollupController {
     @RequestMapping(value = "{stream}/cloudwatch/bytes/outgoing/period/day/{days}",
             method = RequestMethod.GET,
             consumes = {MediaType.ALL_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE})
+            produces = {MediaType.APPLICATION_STREAM_JSON_VALUE})
     public Mono<List<Datapoint>> getOutgoingBytes(
             @PathVariable("stream") String streamName,
             @PathVariable("days") Integer days) {
@@ -110,7 +110,7 @@ public class CloudWatchRollupController {
     @RequestMapping(value = "{stream}/cloudwatch/bytes/incoming/period/day/{days}",
             method = RequestMethod.GET,
             consumes = {MediaType.ALL_VALUE},
-            produces = {MediaType.APPLICATION_JSON_VALUE})
+            produces = {MediaType.APPLICATION_STREAM_JSON_VALUE})
     public Mono<List<Datapoint>> getIncomingBytes(
             @PathVariable("stream") String streamName,
             @PathVariable("days") Integer days) {
