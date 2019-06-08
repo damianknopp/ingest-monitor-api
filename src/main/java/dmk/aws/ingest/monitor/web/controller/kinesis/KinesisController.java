@@ -1,4 +1,4 @@
-package dmk.aws.ingest.monitor.web.controller;
+package dmk.aws.ingest.monitor.web.controller.kinesis;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.kinesis.AmazonKinesisAsync;

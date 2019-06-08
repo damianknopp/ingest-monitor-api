@@ -11,6 +11,8 @@ import com.amazonaws.services.kinesis.AmazonKinesisAsyncClientBuilder;
 import com.amazonaws.services.kinesis.model.ListStreamsResult;
 import com.amazonaws.services.lambda.AWSLambdaAsync;
 import com.amazonaws.services.lambda.AWSLambdaAsyncClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 @Configuration
 public class AwsConfig {
+    protected Logger logger = LoggerFactory.getLogger(AwsConfig.class);
 
     @Bean
     AWSCredentials awsCredentials(String awsAccessKey, String awsAccessSecret) {
@@ -40,15 +43,16 @@ public class AwsConfig {
                 .withRegion(awsRegion)
                 .build();
 
-        try {
-            ListStreamsResult resp = kinesisClient
-                    .listStreamsAsync()
-                    .get();
-            System.out.println(resp.getStreamNames());
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (logger.isDebugEnabled()) {
+            try {
+                ListStreamsResult resp = kinesisClient
+                        .listStreamsAsync()
+                        .get();
+                logger.debug(resp.getStreamNames().toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-
 
         return kinesisClient;
     }

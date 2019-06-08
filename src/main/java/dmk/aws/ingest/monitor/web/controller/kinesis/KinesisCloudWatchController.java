@@ -1,14 +1,21 @@
-package dmk.aws.ingest.monitor.web.controller;
+package dmk.aws.ingest.monitor.web.controller.kinesis;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsync;
-import com.amazonaws.services.cloudwatch.model.*;
-import com.amazonaws.services.kinesis.model.MetricsName;
+import com.amazonaws.services.cloudwatch.model.Datapoint;
+import com.amazonaws.services.cloudwatch.model.Dimension;
+import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsRequest;
+import com.amazonaws.services.cloudwatch.model.GetMetricStatisticsResult;
+import com.amazonaws.services.cloudwatch.model.StandardUnit;
+import com.amazonaws.services.cloudwatch.model.Statistic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -24,8 +31,8 @@ import java.util.concurrent.Future;
  */
 @RestController
 @RequestMapping(value = "/api/kinesis/stream")
-public class CloudWatchRollupController {
-    protected Logger logger = LoggerFactory.getLogger(CloudWatchRollupController.class);
+public class KinesisCloudWatchController {
+    protected Logger logger = LoggerFactory.getLogger(KinesisCloudWatchController.class);
     protected static String KINESIS_NAMESPACE = "AWS/Kinesis";
 
     @Autowired
@@ -148,7 +155,7 @@ public class CloudWatchRollupController {
         final Dimension dimension = new Dimension().withName("StreamName").withValue(streamName);
         final GetMetricStatisticsRequest request = new GetMetricStatisticsRequest();
         request
-                .withNamespace(CloudWatchRollupController.KINESIS_NAMESPACE)
+                .withNamespace(KinesisCloudWatchController.KINESIS_NAMESPACE)
                 .withStatistics(Statistic.Sum)
                 .withDimensions(dimension)
                 .withPeriod(daysInSeconds)
@@ -196,7 +203,7 @@ public class CloudWatchRollupController {
         final Dimension dimension = new Dimension().withName("StreamName").withValue(streamName);
         final GetMetricStatisticsRequest request = new GetMetricStatisticsRequest();
         request
-                .withNamespace(CloudWatchRollupController.KINESIS_NAMESPACE)
+                .withNamespace(KinesisCloudWatchController.KINESIS_NAMESPACE)
                 .withStatistics(Statistic.Sum)
                 .withDimensions(dimension)
                 .withPeriod(daysInSeconds)

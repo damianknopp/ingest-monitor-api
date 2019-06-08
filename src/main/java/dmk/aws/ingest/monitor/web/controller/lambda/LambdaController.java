@@ -1,8 +1,5 @@
-package dmk.aws.ingest.monitor.web.controller;
+package dmk.aws.ingest.monitor.web.controller.lambda;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsync;
-import com.amazonaws.services.cloudwatch.model.*;
 import com.amazonaws.services.lambda.AWSLambdaAsync;
 import com.amazonaws.services.lambda.model.*;
 import dmk.aws.ingest.monitor.web.model.lambda.UpdateLambdaConcurrency;
@@ -14,9 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -32,8 +26,6 @@ public class LambdaController {
 
     @Autowired
     AWSLambdaAsync awsLambdaAsync;
-    @Autowired
-    AWSCredentials awsCredentials;
     @Autowired
     ExecutorService scheduledExecutorService;
 
