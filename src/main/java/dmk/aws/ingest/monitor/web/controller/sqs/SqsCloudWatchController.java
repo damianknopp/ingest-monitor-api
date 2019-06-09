@@ -1,4 +1,4 @@
-package dmk.aws.ingest.monitor.web.controller.lambda;
+package dmk.aws.ingest.monitor.web.controller.sqs;
 
 import com.amazonaws.services.cloudwatch.AmazonCloudWatchAsync;
 import com.amazonaws.services.cloudwatch.model.Datapoint;
@@ -25,32 +25,32 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 /**
- * Query cloud watch for rollup metrics given days ago and a lambda function name
+ * Query cloud watch for rollup metrics given days ago and a sqs queue name/arn
  */
 @RestController
-@RequestMapping(value = "/api/lambda")
-public class LambdaCloudWatchController {
-    protected Logger logger = LoggerFactory.getLogger(LambdaCloudWatchController.class);
-    protected static String CLOUDWATCH_NAMESPACE = "AWS/Lambda";
+@RequestMapping(value = "/api/sqs")
+public class SqsCloudWatchController {
+    protected Logger logger = LoggerFactory.getLogger(SqsCloudWatchController.class);
+    protected static String SQS_NAMESPACE = "AWS/SQS";
 
     @Autowired
     AmazonCloudWatchAsync cloudWatchAsyncClient;
     @Autowired
     ExecutorService scheduledExecutorService;
 
-    @RequestMapping(value = "{functionName}/cloudwatch/invocations/days/{days}/period/{period}",
+    @RequestMapping(value = "{queueName}/cloudwatch/messages/deleted/days/{days}/period/{period}",
             method = RequestMethod.GET,
             consumes = {MediaType.ALL_VALUE},
             produces = {MediaType.APPLICATION_STREAM_JSON_VALUE})
-    public Mono<List<Datapoint>> getInvocationsSumDaysAgoWindowed(
-            @PathVariable("functionName") String functionName,
+    public Mono<List<Datapoint>> getNumberOfMessagesDeletedWindowed(
+            @PathVariable("functionName") String queueName,
             @PathVariable("days") Integer days,
             @PathVariable("period") Integer period) {
         if (logger.isDebugEnabled()) {
-            logger.debug("get invocations for lambda {}, {} day(s) ago, {} period", functionName, days, period);
+            logger.debug("get number of messages deleted for queue {}, {} day(s) ago, {} window period", queueName, days, period);
         }
 
-        GetMetricStatisticsRequest request = buildInvocationsMetricsRequest(functionName, days, period);
+        GetMetricStatisticsRequest request = buildMessagesDeletedMetricsRequest(queueName, days, period);
         Future<GetMetricStatisticsResult> resp = cloudWatchAsyncClient.getMetricStatisticsAsync(request);
         CompletableFuture<List<Datapoint>> future = CompletableFuture.supplyAsync(() -> {
             try {
@@ -63,36 +63,38 @@ public class LambdaCloudWatchController {
         return Mono.fromFuture(future);
     }
 
-    @RequestMapping(value = "{functionName}/cloudwatch/invocations/days/{days}",
+    @RequestMapping(value = "{queueName}/cloudwatch/messages/deleted/days/{days}",
             method = RequestMethod.GET,
             consumes = {MediaType.ALL_VALUE},
             produces = {MediaType.APPLICATION_STREAM_JSON_VALUE})
-    public Mono<List<Datapoint>> getInvocationsSumDaysAgo(
-            @PathVariable("functionName") String functionName,
+    public Mono<List<Datapoint>> getNumberOfMessagesDeletedDefaultWindow(
+            @PathVariable("queueName") String queueName,
             @PathVariable("days") Integer days) {
         if (logger.isDebugEnabled()) {
-            logger.debug("get invocations for lambda {}, {} day(s) ago", functionName, days);
+            logger.debug("get number of messages deleted for queue {}, {} day(s) ago", queueName, days);
         }
 
-        return this.getInvocationsSumDaysAgoWindowed(functionName, days, 5 * 60);
+        // default 5 min window
+        return this.getNumberOfMessagesDeletedWindowed(queueName, days, 5 * 60);
     }
 
     /**
-     * build a sum statistics count metric for invocations, given days ago
+     * build a sum statistics count for metric, given days ago, windowed period
      *
-     * @param metrics
-     * @param daysAgo    Integer
-     * @param functionName String
+     * @param metrics   String
+     * @param queueName String
+     * @param daysAgo   Integer
+     * @param period    Integer
      * @return GetMetricStatisticsRequest
      */
-    protected GetMetricStatisticsRequest buildMetricsRequest(String metrics, String functionName, Integer daysAgo, Integer period) {
+    protected GetMetricStatisticsRequest buildMetricsRequest(String metrics, String queueName, Integer daysAgo, Integer period) {
         final LocalDateTime now = LocalDateTime.now();
         final LocalDateTime yesterday = now.minusDays(daysAgo);
         final ZoneId zoneId = ZoneId.systemDefault();
-        final Dimension dimension = new Dimension().withName("FunctionName").withValue(functionName);
+        final Dimension dimension = new Dimension().withName(metrics).withValue(queueName);
         final GetMetricStatisticsRequest request = new GetMetricStatisticsRequest();
         request
-                .withNamespace(LambdaCloudWatchController.CLOUDWATCH_NAMESPACE)
+                .withNamespace(SqsCloudWatchController.SQS_NAMESPACE)
                 .withStatistics(Statistic.Sum)
                 .withDimensions(dimension)
                 .withPeriod(period)
@@ -103,16 +105,16 @@ public class LambdaCloudWatchController {
     }
 
     /**
-     * build a sum statistics count metric for invocations, given days ago
+     * build a sum statistics count metric for deleted messages, given days ago, windowed period
      *
-     * @param daysAgo    Integer
-     * @param functionName String
+     * @param queueName String
+     * @param daysAgo   Integer
+     * @param period    Integer
      * @return GetMetricStatisticsRequest
      */
-    protected GetMetricStatisticsRequest buildInvocationsMetricsRequest(String functionName, Integer daysAgo, Integer period) {
-        return this.buildMetricsRequest("Invocations", functionName, daysAgo, period);
+    protected GetMetricStatisticsRequest buildMessagesDeletedMetricsRequest(String queueName, Integer daysAgo, Integer period) {
+        return this.buildMetricsRequest("NumberOfMessagesDeleted", queueName, daysAgo, period);
     }
-
 }
 
 

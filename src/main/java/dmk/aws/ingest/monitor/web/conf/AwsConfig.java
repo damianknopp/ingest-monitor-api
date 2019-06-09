@@ -11,6 +11,8 @@ import com.amazonaws.services.kinesis.AmazonKinesisAsyncClientBuilder;
 import com.amazonaws.services.kinesis.model.ListStreamsResult;
 import com.amazonaws.services.lambda.AWSLambdaAsync;
 import com.amazonaws.services.lambda.AWSLambdaAsyncClientBuilder;
+import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -89,6 +91,24 @@ public class AwsConfig {
                 .withRegion(awsRegion)
                 .build();
         return awsLambdaAsync;
+    }
+
+    /**
+     * @see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/index.html?com/amazonaws/services/sqs/AmazonSQSAsyncClientBuilder.html
+     * @see https://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSAsync.html
+     * @param awsCredentials
+     * @param awsRegion
+     * @return AWSLambdaAsync
+     */
+    @Bean
+    AmazonSQSAsync awsSqsAsync(AWSCredentials awsCredentials, String awsRegion) {
+        AWSCredentialsProvider credentialsProvider = new AWSStaticCredentialsProvider(awsCredentials);
+        AmazonSQSAsync amazonSQSAsync = AmazonSQSAsyncClientBuilder
+                .standard()
+                .withCredentials(credentialsProvider)
+                .withRegion(awsRegion)
+                .build();
+        return amazonSQSAsync;
     }
 
     @Bean
